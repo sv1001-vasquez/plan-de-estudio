@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Malla Curricular</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        .periodo {
+            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        .periodo h2 {
+            margin-top: 0;
+            color: #555;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .cursos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .curso {
+            background-color: #e0f7fa; /* Default light blue */
+            border: 1px solid #b2ebf2;
+            border-radius: 5px;
+            padding: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+            position: relative;
+            opacity: 0.5; /* Locked by default */
+        }
+        .curso.unlocked {
+            opacity: 1; /* Unlocked state */
+            cursor: pointer;
+        }
+        .curso.completed {
+            background-color: #d4edda; /* Light green for completed */
+            border-color: #aed581;
+            text-decoration: line-through;
+            opacity: 1;
+        }
+        .curso:hover.unlocked {
+            background-color: #c0f1f4;
+            border-color: #80deea;
+        }
+        .curso.completed:hover {
+            background-color: #c3e6cb;
+            border-color: #8bc34a;
+        }
+        .curso h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+            color: #00796b;
+        }
+        .curso p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #4CAF50;
+        }
+
+        /* Period specific colors */
+        .periodo[data-period="1"] { background-color: #ffe0b2; } /* Light Orange */
+        .periodo[data-period="2"] { background-color: #c8e6c9; } /* Light Green */
+        .periodo[data-period="3"] { background-color: #bbdefb; } /* Light Blue */
+        .periodo[data-period="4"] { background-color: #f8bbd0; } /* Light Pink */
+        .periodo[data-period="5"] { background-color: #fff9c4; } /* Light Yellow */
+        .periodo[data-period="6"] { background-color: #e1bee7; } /* Light Purple */
+        .periodo[data-period="7"] { background-color: #b2ebf2; } /* Cyan */
+        .periodo[data-period="8"] { background-color: #dcedc8; } /* Lime Green */
+        .periodo[data-period="9"] { background-color: #ffebee; } /* Redish Pink */
+        .periodo[data-period="10"] { background-color: #c5cae9; } /* Indigo */
+        .periodo[data-period="11"] { background-color: #f0f4c3; } /* Light Yellow-Green */
+        .periodo[data-period="12"] { background-color: #b3e5fc; } /* Light Blue */
+        .periodo[data-period="13"] { background-color: #ffe0b2; } /* Light Orange (reusing for visual variety) */
+        .periodo[data-period="14"] { background-color: #c8e6c9; }
+        .periodo[data-period="15"] { background-color: #bbdefb; }
+        .periodo[data-period="16"] { background-color: #f8bbd0; }
+        .periodo[data-period="17"] { background-color: #fff9c4; }
+        .periodo[data-period="18"] { background-color: #e1bee7; }
+        .periodo[data-period="19"] { background-color: #b2ebf2; }
+        .periodo[data-period="20"] { background-color: #dcedc8; }
+        .periodo[data-period="21"] { background-color: #ffebee; }
+        .periodo[data-period="22"] { background-color: #c5cae9; }
+        .periodo[data-period="23"] { background-color: #f0f4c3; }
+        .periodo[data-period="24"] { background-color: #b3e5fc; }
+        .periodo[data-period="25"] { background-color: #e0f2f7; } /* Very light blue for final period */
+
+
+        .elective-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .elective-option {
+            background-color: #f0f8ff; /* Lighter background for electives */
+            border: 1px dashed #a8dcfc; /* Dashed border for distinction */
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .elective-option:hover {
+            background-color: #e0f2f7;
+        }
+        .elective-option.selected {
+            background-color: #d4edda; /* Green for selected elective */
+            border-color: #aed581;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Mi Malla Curricular</h1>
+
+        <div id="periodos-container">
+            </div>
+    </div>
+
+    <script>
+        const curriculum = [
+            {
+                period: 1,
+                title: "1er Periodo",
+                courses: [
+                    { id: "MAT101", name: "Introducción al Álgebra", credits: "4 (4-0)" },
+                    { id: "MDE109", name: "Desarrollo Humano y Social", credits: "4 (4-0)" },
+                    { id: "MDE110", name: "Procesos Celulares y Moleculares I", credits: "3 (3-0)" },
+                    { id: "MDE111", name: "Estructura y Función I", credits: "4 (3-1)" }
+                ]
+            },
+            {
+                period: 2,
+                title: "2do Periodo",
+                courses: [
+                    { id: "MAT102", name: "ÁLGEBRA", credits: "4 (4-0)" },
+                    { id: "MDE113", name: "PROCESOS CELULARES Y MOLECULARES II", credits: "3 (3-0)" },
+                    { id: "MDE114", name: "ESTRUCTURA Y FUNCIÓN II", credits: "4 (3-1)" },
+                    { id: "MDE112", name: "ESTILO DE VIDA, SALUD Y MEDIO AMBIENTE", credits: "4 (4-0)" }
+                ]
+            },
+            {
+                period: 3,
+                title: "3er Periodo",
+                courses: [
+                    { id: "MDE115", name: "BASES DE LA TERAPÉUTICA MEDICAMENTOSA", credits: "4 (4-0)" },
+                    { id: "MDE116", name: "PROCESOS CELULARES Y MOLECULARES III", credits: "3 (3-0)" },
+                    { id: "MDE117", name: "SO I - CIRCULACIÓN, RESPIRACIÓN, EXCRECIÓN Y EQUILIBRIO ÁCIDO-BÁSICO I", credits: "4 (3-1)" },
+                    { id: "MDE202", name: "PRÁCTICAS MÉDICAS I", credits: "4 (3-1) - 15" }
+                ]
+            },
+            {
+                period: 4,
+                title: "4to Periodo",
+                courses: [
+                    { id: "ESP103", name: "COMUNICACIÓN ORAL Y ESCRITA", credits: "4 (4-0)" },
+                    { id: "MDE118", name: "MECANISMOS DE AGRESIÓN Y DEFENSA I", credits: "4 (4-0)" },
+                    { id: "MDE119", name: "SO I - CIRCULACIÓN, RESPIRACIÓN, EXCRECIÓN Y EQUILIBRIO ÁCIDO-BÁSICO II", credits: "4 (3-1)" },
+                    { id: "MDE216", name: "PRÁCTICAS MÉDICAS II", credits: "4 (3-1) - 15" }
+                ]
+            },
+            {
+                period: 5,
+                title: "5to Periodo",
+                courses: [
+                    { id: "ING101-ING_SUBJ1", name: "INGLÉS I / SUBJETIVA DE IDIOMA EXTRANJERO I", credits: "3 (3-0)", isElectiveGroup: true, options: ["ING101", "ING104", "ING107", "ING110"] },
+                    { id: "MDE217", name: "MECANISMOS DE AGRESIÓN Y DEFENSA II", credits: "4 (4-0)" },
+                    { id: "MDE218", name: "SO II - DIGESTIÓN, ABSORCIÓN, REPRODUCCIÓN Y CONTROL ENDOCRINO I", credits: "4 (3-1)" },
+                    { id: "MDE219", name: "PRÁCTICAS MÉDICAS III", credits: "4 (3-1)" }
+                ]
+            },
+            {
+                period: 6,
+                title: "6to Periodo",
+                courses: [
+                    { id: "ING102-ING_SUBJ2", name: "INGLÉS II / SUBJETIVA DE IDIOMA EXTRANJERO II", credits: "3 (3-0)", isElectiveGroup: true, options: ["ING102", "ING105", "ING108", "ING111"] },
+                    { id: "MDE220", name: "MECANISMOS DE AGRESIÓN Y DEFENSA III", credits: "4 (4-0)" },
+                    { id: "MDE221", name: "SO II - DIGESTIÓN, ABSORCIÓN, REPRODUCCIÓN Y CONTROL ENDOCRINO II", credits: "4 (3-1)" },
+                    { id: "MDE222", name: "PRÁCTICAS MÉDICAS IV", credits: "4 (3-1) - 15" }
+                ]
+            },
+            {
+                period: 7,
+                title: "7mo Periodo",
+                courses: [
+                    { id: "ING103-ING_SUBJ3", name: "INGLÉS III / SUBJETIVA DE IDIOMA EXTRANJERO III", credits: "3 (3-0)", isElectiveGroup: true, options: ["ING103", "ING106", "ING109", "ING112"] },
+                    { id: "MDE223", name: "MECANISMOS DE AGRESIÓN Y DEFENSA IV", credits: "4 (4-0)" },
+                    { id: "MDE224", name: "SO III - SOPORTE, LOCOMOCIÓN Y CONTROL NEURAL I", credits: "4 (3-1)" },
+                    { id: "MDE225", name: "PRÁCTICAS MÉDICAS V", credits: "4 (3-1)" }
+                ]
+            },
+            {
+                period: 8,
+                title: "8vo Periodo",
+                courses: [
+                    { id: "ING113-ING_SUBJ4", name: "INGLÉS IV / SUBJETIVA DE IDIOMA EXTRANJERO IV", credits: "3 (3-0)", isElectiveGroup: true, options: ["ING113", "ING114"] },
+                    { id: "MDE226", name: "NEUROCIENCIAS Y CONCIENCIA", credits: "4 (4-0)" },
+                    { id: "MDE227", name: "SO III - SOPORTE, LOCOMOCIÓN Y CONTROL NEURAL II", credits: "4 (3-1)" },
+                    { id: "MDE228", name: "PRÁCTICAS MÉDICAS VI", credits: "4 (3-1) - 15" }
+                ]
+            },
+            {
+                period: 9,
+                title: "9no Periodo",
+                courses: [
+                    { id: "ING115-ING_SUBJ5", name: "INGLÉS V / SUBJETIVA DE IDIOMA EXTRANJERO V", credits: "3 (3-0)", isElectiveGroup: true, options: ["ING115", "ING116", "ING117"] },
+                    { id: "MDE315", name: "SALUD INFANTIL Y DEL ADOLESCENTE", credits: "4 (4-0)" },
+                    { id: "MDE316", name: "SALUD DE LA MUJER", credits: "5 (4-1)" },
+                    { id: "MDE317", name: "CLÍNICA INTEGRADA I", credits: "4 (3-1) - 16" }
+                ]
+            },
+            {
+                period: 10,
+                title: "10mo Periodo",
+                courses: [
+                    { id: "ING118-ING_SUBJ6", name: "INGLÉS VI / SUBJETIVA DE IDIOMA EXTRANJERO VI", credits: "3 (3-0)", isElectiveGroup: true, options: ["ING118", "ING119", "ING120"] },
+                    { id: "MDE318", name: "SISTEMAS DE SALUD", credits: "4 (4-0)" },
+                    { id: "MDE319", name: "SALUD DEL ADULTO", credits: "4 (4-0)" },
+                    { id: "MDE320", name: "CLÍNICA INTEGRADA II", credits: "4 (3-1) - 16" }
+                ]
+            },
+            {
+                period: 11,
+                title: "11vo Periodo",
+                courses: [
+                    { id: "ING121-ING_SUBJ7", name: "INGLÉS VII / SUBJETIVA DE IDIOMA EXTRANJERO VII", credits: "3 (3-0)", isElectiveGroup: true, options: ["ING121", "ING122", "ING123"] },
+                    { id: "MDE321", name: "PREVENCIÓN Y PROMOCIÓN DE LA SALUD I", credits: "4 (4-0)" },
+                    { id: "MDE322", name: "SALUD DEL ADULTO MAYOR", credits: "4 (4-0)" },
+                    { id: "MDE323", name: "CLÍNICA INTEGRADA III", credits: "3 (2-1) - 16" }
+                ]
+            },
+            {
+                period: 12,
+                title: "12vo Periodo",
+                courses: [
+                    { id: "ING124-ING_SUBJ8", name: "INGLÉS VIII / SUBJETIVA DE IDIOMA EXTRANJERO VIII", credits: "3 (3-0)", isElectiveGroup: true, options: ["ING124", "ING125", "ING126"] },
+                    { id: "MDE324", name: "PREVENCIÓN Y PROMOCIÓN DE LA SALUD II", credits: "4 (3-1)" },
+                    { id: "MDE325", name: "SALUD MENTAL", credits: "5 (4-1)" },
+                    { id: "MDE326", name: "CLÍNICA INTEGRADA IV", credits: "4 (3-1) - 16" }
+                ]
+            },
+            {
+                period: 13,
+                title: "13er Periodo",
+                courses: [
+                    { id: "LCC104", name: "OFIMÁTICA AVANZADA", credits: "2 (1-1)" },
+                    { id: "MDE407", name: "MEDICINA INTERNA I", credits: "5 (4-1)" },
+                    { id: "MDE408", name: "PEDIATRÍA I", credits: "5 (4-1)" },
+                    { id: "BMD429", name: "TECNOLOGÍAS BIOMÉDICAS I", credits: "3 (3-0) - 15 HP" }
+                ]
+            },
+            {
+                period: 14,
+                title: "14to Periodo",
+                courses: [
+                    { id: "SOC101", name: "SOCIOLOGÍA", credits: "3 (3-0)" },
+                    { id: "MDE409", name: "CIRUGÍA I", credits: "5 (4-1)" },
+                    { id: "MDE410", name: "GINECOLOGÍA Y OBSTETRICIA I", credits: "5 (4-1) - 13" }
+                ]
+            },
+            {
+                period: 15,
+                title: "15to Periodo",
+                courses: [
+                    { id: "FIL101", name: "FILOSOFÍA", credits: "3 (3-0)" },
+                    { id: "MDE411", name: "URGENCIAS Y EMERGENCIAS I", credits: "5 (4-1)" },
+                    { id: "MDE412", name: "SEMINARIOS INTEGRADORES I", credits: "3 (2-1) - 11" }
+                ]
+            },
+            {
+                period: 16,
+                title: "16to Periodo",
+                courses: [
+                    { id: "MDE208", name: "METODOLOGÍA DE INVESTIGACIÓN", credits: "3 (2-1)" },
+                    { id: "MDE413", name: "TEMAS AVANZADOS EN PRÁCTICA MÉDICA I", credits: "4 (3-1)" },
+                    { id: "MDE414", name: "MEDICINA ALTERNATIVA Y COMPLEMENTARIA", credits: "4 (4-0) - 11 HP" }
+                ]
+            },
+            {
+                period: 17,
+                title: "17vo Periodo",
+                courses: [
+                    { id: "HIS101", name: "HISTORIA DE HONDURAS", credits: "3 (3-0)" },
+                    { id: "MDE508", name: "MEDICINA INTERNA II", credits: "5 (4-1)" },
+                    { id: "MDE509", name: "PEDIATRÍA II", credits: "5 (4-1)" },
+                    { id: "BMD430", name: "TECNOLOGÍAS BIOMÉDICAS II", credits: "3 (3-0) - 16 HP" }
+                ]
+            },
+            {
+                period: 18,
+                title: "18vo Periodo",
+                courses: [
+                    { id: "ART-DEP", name: "ELECTIVA ARTE / DEPORTE", credits: "3 (3-0)" },
+                    { id: "MDE510", name: "CIRUGÍA II", credits: "5 (4-1)" },
+                    { id: "MDE511", name: "GINECOLOGÍA Y OBSTETRICIA II", credits: "5 (4-1) - 13" }
+                ]
+            },
+            {
+                period: 19,
+                title: "19vo Periodo",
+                courses: [
+                    { id: "MDE212", name: "GENERACIÓN DE EMPRESAS EN SALUD", credits: "3 (3-0)" },
+                    { id: "MDE512", name: "URGENCIAS Y EMERGENCIAS II", credits: "5 (4-1)" },
+                    { id: "MDE513", name: "SEMINARIOS INTEGRADORES II", credits: "3 (2-1) - 11" }
+                ]
+            },
+            {
+                period: 20,
+                title: "20vo Periodo",
+                courses: [
+                    { id: "MDE304", name: "GESTIÓN DE SERVICIOS EN SALUD", credits: "3 (3-0)" },
+                    { id: "MDE514", name: "TEMAS AVANZADOS EN PRÁCTICA MÉDICA II", credits: "4 (3-1)" },
+                    { id: "MDE515", name: "CUIDADOS PALIATIVOS Y DE HOSPICIO", credits: "4 (4-0) - 11" }
+                ]
+            },
+            {
+                period: 21,
+                title: "21er Periodo",
+                courses: [
+                    { id: "MDE605", name: "INTERNADO GINECO-OBSTETRICIA", credits: "16 (6-10) - 16" }
+                ]
+            },
+            {
+                period: 22,
+                title: "22do Periodo",
+                courses: [
+                    { id: "MDE606", name: "INTERNADO PEDIATRÍA", credits: "16 (6-10) - 16" }
+                ]
+            },
+            {
+                period: 23,
+                title: "23er Periodo",
+                courses: [
+                    { id: "MDE607", name: "INTERNADO CIRUGÍA", credits: "16 (6-10) - 16" }
+                ]
+            },
+            {
+                period: 24,
+                title: "24to Periodo",
+                courses: [
+                    { id: "MDE608", name: "INTERNADO MEDICINA INTERNA", credits: "16 (6-10) - 16" }
+                ]
+            },
+            {
+                period: 25,
+                title: "25to Periodo (Servicio Social)",
+                courses: [
+                    { id: "MDE702", name: "SERVICIO SOCIAL OBLIGATORIO 1 AÑO", credits: "" },
+                    { id: "MDE703", name: "SERVICIO SOCIAL OBLIGATORIO 6 MESES", credits: "" }
+                ]
+            }
+        ];
+
+        // Define prerequisites
+        const prerequisites = {
+            "MAT102": ["MAT101"],
+            "MDE113": ["MDE110"],
+            "MDE114": ["MDE111"],
+            "MDE116": ["MDE113"],
+            "MDE117": ["MDE114"],
+            "MDE202": ["MDE117"], // Assuming MDE117 is the prerequisite for MDE202
+            "MDE118": ["MDE113"], // Assuming MDE113 is a prerequisite for MDE118
+            "MDE119": ["MDE117"],
+            "MDE216": ["MDE119", "MDE202"], // Assuming MDE119 and MDE202 are prerequisites
+            "ING101-ING_SUBJ1": [], // No prerequisites for 1st English
+            "MDE217": ["MDE118"],
+            "MDE218": ["MDE119"],
+            "MDE219": ["MDE216", "MDE218"], // Assuming prerequisites
+            "ING102-ING_SUBJ2": ["ING101-ING_SUBJ1"],
+            "MDE220": ["MDE217"],
+            "MDE221": ["MDE218"],
+            "MDE222": ["MDE219", "MDE221"],
+            "ING103-ING_SUBJ3": ["ING102-ING_SUBJ2"],
+            "MDE223": ["MDE220"],
+            "MDE224": ["MDE221"],
+            "MDE225": ["MDE222", "MDE224"],
+            "ING113-ING_SUBJ4": ["ING103-ING_SUBJ3"],
+            "MDE226": ["MDE223"],
+            "MDE227": ["MDE224"],
+            "MDE228": ["MDE225", "MDE227"],
+            "ING115-ING_SUBJ5": ["ING113-ING_SUBJ4"],
+            "MDE315": ["MDE226"],
+            "MDE316": ["MDE227"],
+            "MDE317": ["MDE228", "MDE316"],
+            "ING118-ING_SUBJ6": ["ING115-ING_SUBJ5"],
+            "MDE318": ["MDE315"],
+            "MDE319": ["MDE316"],
+            "MDE320": ["MDE317", "MDE319"],
+            "ING121-ING_SUBJ7": ["ING118-ING_SUBJ6"],
+            "MDE321": ["MDE318"],
+            "MDE322": ["MDE319"],
+            "MDE323": ["MDE320", "MDE322"],
+            "ING124-ING_SUBJ8": ["ING121-ING_SUBJ7"],
+            "MDE324": ["MDE321"],
+            "MDE325": ["MDE322"],
+            "MDE326": ["MDE323", "MDE325"],
+            "LCC104": [], // No explicit prereq for this one, typically gen ed
+            "MDE407": ["MDE326"], // Assuming MDE326 or later core MDE courses
+            "MDE408": ["MDE326"],
+            "BMD429": ["MDE326"],
+            "SOC101": [],
+            "MDE409": ["MDE407"],
+            "MDE410": ["MDE408"],
+            "FIL101": [],
+            "MDE411": ["MDE409", "MDE410"],
+            "MDE412": ["MDE411"],
+            "MDE208": [], // Typically general studies, no specific prereq
+            "MDE413": ["MDE412"],
+            "MDE414": ["MDE413"],
+            "HIS101": [],
+            "MDE508": ["MDE407"],
+            "MDE509": ["MDE408"],
+            "BMD430": ["BMD429"],
+            "ART-DEP": [],
+            "MDE510": ["MDE409"],
+            "MDE511": ["MDE410"],
+            "MDE212": [],
+            "MDE512": ["MDE411"],
+            "MDE513": ["MDE512"],
+            "MDE304": ["MDE212"],
+            "MDE514": ["MDE513"],
+            "MDE515": ["MDE514"],
+            "MDE605": ["MDE511", "MDE508"], // Internships generally require completion of core areas
+            "MDE606": ["MDE509", "MDE508"],
+            "MDE607": ["MDE510", "MDE508"],
+            "MDE608": ["MDE508"],
+            "MDE702": ["MDE605", "MDE606", "MDE607", "MDE608"], // All internships completed
+            "MDE703": ["MDE605", "MDE606", "MDE607", "MDE608"]
+        };
+
+
+        let completedCourses = JSON.parse(localStorage.getItem('completedCourses')) || {};
+        let selectedElectives = JSON.parse(localStorage.getItem('selectedElectives')) || {};
+
+        const periodosContainer = document.getElementById('periodos-container');
+
+        function renderCurriculum() {
+            periodosContainer.innerHTML = ''; // Clear previous content
+
+            curriculum.forEach(periodData => {
+                const periodoDiv = document.createElement('div');
+                periodoDiv.classList.add('periodo');
+                periodoDiv.dataset.period = periodData.period;
+
+                const h2 = document.createElement('h2');
+                h2.textContent = periodData.title;
+                periodoDiv.appendChild(h2);
+
+                const cursosGrid = document.createElement('div');
+                cursosGrid.classList.add('cursos-grid');
+
+                periodData.courses.forEach(course => {
+                    if (course.isElectiveGroup) {
+                        const electiveGroupDiv = document.createElement('div');
+                        electiveGroupDiv.classList.add('curso', 'elective-group-container');
+                        electiveGroupDiv.dataset.courseId = course.id;
+                        electiveGroupDiv.innerHTML = `
+                            <h3>${course.name}</h3>
+                            <p>Créditos: ${course.credits}</p>
+                            <div class="elective-group">
+                                ${course.options.map(optionId => `
+                                    <div class="elective-option" data-option-id="${optionId}">
+                                        ${optionId}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                        cursosGrid.appendChild(electiveGroupDiv);
+                    } else {
+                        const courseDiv = document.createElement('div');
+                        courseDiv.classList.add('curso');
+                        courseDiv.dataset.courseId = course.id;
+                        courseDiv.innerHTML = `
+                            <h3>${course.id}</h3>
+                            <p>${course.name}</p>
+                            <p>Créditos: ${course.credits}</p>
+                        `;
+                        cursosGrid.appendChild(courseDiv);
+                    }
+                });
+                periodoDiv.appendChild(cursosGrid);
+                periodosContainer.appendChild(periodoDiv);
+            });
+
+            applyStates();
+            addEventListeners();
+        }
+
+        function checkPrerequisites(courseId) {
+            const requiredPrereqs = prerequisites[courseId];
+            if (!requiredPrereqs) {
+                return true; // No prerequisites defined, so it's unlocked
+            }
+
+            // Check if all prerequisites are met
+            return requiredPrereqs.every(prereqId => {
+                // Handle elective groups as prerequisites
+                if (prereqId.includes('-ING_SUBJ')) { // Special handling for ING elective groups
+                    const electiveGroup = curriculum.flatMap(p => p.courses).find(c => c.id === prereqId);
+                    if (electiveGroup && electiveGroup.isElectiveGroup) {
+                        return electiveGroup.options.some(optionId => completedCourses[optionId]);
+                    }
+                }
+                return completedCourses[prereqId];
+            });
+        }
+
+        function applyStates() {
+            document.querySelectorAll('.curso').forEach(courseDiv => {
+                const courseId = courseDiv.dataset.courseId;
+
+                // Handle regular courses
+                if (!courseDiv.classList.contains('elective-group-container')) {
+                    if (completedCourses[courseId]) {
+                        courseDiv.classList.add('completed');
+                        courseDiv.classList.add('unlocked'); // Completed courses are always unlocked for interaction
+                    } else {
+                        const isUnlocked = checkPrerequisites(courseId);
+                        if (isUnlocked) {
+                            courseDiv.classList.add('unlocked');
+                        } else {
+                            courseDiv.classList.remove('unlocked');
+                        }
+                        courseDiv.classList.remove('completed');
+                    }
+                } else {
+                    // Handle elective groups
+                    const electiveOptions = courseDiv.querySelectorAll('.elective-option');
+                    let anyOptionCompleted = false;
+                    electiveOptions.forEach(optionDiv => {
+                        const optionId = optionDiv.dataset.optionId;
+                        if (completedCourses[optionId]) {
+                            optionDiv.classList.add('selected');
+                            anyOptionCompleted = true;
+                        } else {
+                            optionDiv.classList.remove('selected');
+                        }
+                    });
+
+                    // An elective group is considered "completed" if any of its options is
+                    if (anyOptionCompleted) {
+                        courseDiv.classList.add('completed');
+                        courseDiv.classList.add('unlocked');
+                    } else {
+                        courseDiv.classList.remove('completed');
+                        const isUnlocked = checkPrerequisites(courseId);
+                        if (isUnlocked) {
+                            courseDiv.classList.add('unlocked');
+                        } else {
+                            courseDiv.classList.remove('unlocked');
+                        }
+                    }
+                }
+            });
+        }
+
+        function addEventListeners() {
+            document.querySelectorAll('.curso').forEach(courseDiv => {
+                // For regular courses
+                if (!courseDiv.classList.contains('elective-group-container')) {
+                    courseDiv.onclick = () => {
+                        if (courseDiv.classList.contains('unlocked')) {
+                            const courseId = courseDiv.dataset.courseId;
+                            if (completedCourses[courseId]) {
+                                delete completedCourses[courseId]; // Unmark if already completed
+                            } else {
+                                completedCourses[courseId] = true; // Mark as completed
+                            }
+                            saveState();
+                            renderCurriculum(); // Re-render to update states and unlocks
+                        }
+                    };
+                } else {
+                    // For elective groups
+                    const electiveOptions = courseDiv.querySelectorAll('.elective-option');
+                    electiveOptions.forEach(optionDiv => {
+                        optionDiv.onclick = (event) => {
+                            event.stopPropagation(); // Prevent parent .curso click
+                            if (courseDiv.classList.contains('unlocked')) {
+                                const optionId = optionDiv.dataset.optionId;
+                                const parentGroupId = courseDiv.dataset.courseId;
+
+                                // If this option is already selected, unselect it
+                                if (completedCourses[optionId]) {
+                                    delete completedCourses[optionId];
+                                } else {
+                                    // If another option in this group was selected, unselect it
+                                    const previouslySelectedOption = Array.from(electiveOptions).find(opt => completedCourses[opt.dataset.optionId]);
+                                    if (previouslySelectedOption) {
+                                        delete completedCourses[previouslySelectedOption.dataset.optionId];
+                                    }
+                                    completedCourses[optionId] = true; // Select the new option
+                                }
+                                saveState();
+                                renderCurriculum(); // Re-render to update states and unlocks
+                            }
+                        };
+                    });
+                }
+            });
+        }
+
+        function saveState() {
+            localStorage.setItem('completedCourses', JSON.stringify(completedCourses));
+            localStorage.setItem('selectedElectives', JSON.stringify(selectedElectives)); // Not strictly needed for this design, but good practice
+        }
+
+        // Initial render when the page loads
+        renderCurriculum();
+    </script>
+
+</body>
+</html>
